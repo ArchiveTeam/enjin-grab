@@ -83,7 +83,7 @@ discover_item = function(target, item)
     if string.match(item, "boxsmall") then
       discover_item(target, string.gsub(item, "boxsmall", "boxlarge"))
     end
-print('discovered', item)
+--print('discovered', item)
     target[item] = true
     return true
   end
@@ -300,7 +300,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     end
     if not processed(url_)
       and allowed(url_, origurl) then
-print('queued', url_)
+--print('queued', url_)
       table.insert(urls, { url=url_ })
       addedtolist[url_] = true
       addedtolist[url] = true
@@ -369,7 +369,7 @@ print('queued', url_)
         ["method"]=action,
         ["params"]=data
       }
-      print(last_id, action)
+      --print(last_id, action)
       local newurl = urlparse.absolute(url, "/api/v1/api.php")
       ids[newurl] = true
       table.insert(urls, {
