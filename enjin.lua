@@ -564,7 +564,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     return wget.actions.ABORT
   end
 
-  if not is_static(url["url"]) then
+  if not is_static(url["url"]) and status_code ~= 302 then
     os.execute("sleep " .. tostring(concurrency*1.5))
   end
 
