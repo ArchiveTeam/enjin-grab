@@ -7,6 +7,7 @@ JSON = (loadfile "JSON.lua")()
 
 local item_dir = os.getenv("item_dir")
 local warc_file_base = os.getenv("warc_file_base")
+local concurrency = tonumber(os.getenv("concurrency"))
 local item_type = nil
 local item_name = nil
 local item_value = nil
@@ -194,7 +195,8 @@ allowed = function(url, parenturl)
     or string.match(url, "/ajax%.php.+thread_id=[0-9]")
     or string.match(url, "/ajax%.php.+forum%-thread")
     or string.match(url, "/ajax%.php.+comment_id=[0-9]")
-    or string.match(url, "^https?://https?://") then
+    or string.match(url, "^https?://https?://")
+    or string.match(url, "^https?://www%.facebook%.com/") then
     return false
   end
 
@@ -555,6 +557,10 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
 
   if killgrab then
     return wget.actions.ABORT
+  end
+
+  if not is_static(url["url"]) then
+    os.execute("sleep " .. tostring(concurrency*2))
   end
 
   find_item(url["url"])

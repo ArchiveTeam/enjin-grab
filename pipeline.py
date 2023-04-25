@@ -60,7 +60,7 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20230425.03'
+VERSION = '20230425.04'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
 TRACKER_ID = 'enjin'
 TRACKER_HOST = 'legacy-api.arpa.li'
@@ -274,7 +274,18 @@ class WgetArgs(object):
             '--warc-zstd-dict', ItemInterpolation('%(item_dir)s/zstdict'),
         ])
 
-        item['item_names_newline'] = item['item_name'].replace('\0', '\n')
+        item['item_name'] = '\0'.join([
+            s for s in item['item_name'].split('\0')
+            if s.split(':')[0] != 'profile'
+        ])
+
+        if '--concurrent' in sys.argv:
+            concurrency = int(sys.argv[sys.argv.index('--concurrent')+1])
+        else:
+            concurrency = os.getenv('CONCURRENT_ITEMS')
+            if concurrency is None:
+                concurrency = 4
+        item['concurrency'] = str(concurrency)
 
         for item_name in item['item_name'].split('\0'):
             wget_args.extend(['--warc-header', 'x-wget-at-project-item-name: '+item_name])
@@ -335,6 +346,7 @@ pipeline = Pipeline(
         env={
             'item_dir': ItemValue('item_dir'),
             'warc_file_base': ItemValue('warc_file_base'),
+            'concurrency': ItemValue('concurrency')
         }
     ),
     SetBadUrls(),
