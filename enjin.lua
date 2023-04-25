@@ -412,6 +412,10 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     and status_code < 300
     and not is_static(url) then
     html = read_file(file)
+    if string.match(html, "var album_url") then
+      kill_grab()
+      return urls
+    end
     local wiki_id, preset_id, base_url = string.match(html, "m_wiki%[([0-9]+)%]%s*=%s*new%s+Enjin_Wiki%({%s*preset_id%s*:%s*([0-9]+),%s*base_url%s*:%s+'([^']+)',")
     if wiki_id and preset_id and base_url then
       local preset_id_data = {
