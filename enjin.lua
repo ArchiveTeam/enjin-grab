@@ -181,7 +181,21 @@ allowed = function(url, parenturl)
     return true
   end
 
-  if find_path_loop(url, 10) then
+  if find_path_loop(url, 3) then
+    return false
+  end
+
+  local count_found = 0
+  for _, s in pairs({
+    "viewthread",
+    "viewforum",
+    "article"
+  }) do
+    for _ in string.gmatch(url, "(/" .. s .. "/)") do
+      count_found = count_found + 1
+    end
+  end
+  if count_found > 1 then
     return false
   end
 
@@ -196,6 +210,8 @@ allowed = function(url, parenturl)
     or string.match(url, "/ajax%.php.+forum%-thread")
     or string.match(url, "/ajax%.php.+comment_id=[0-9]")
     or string.match(url, "^https?://https?://")
+    or string.match(url, "/login/do/")
+    or string.match(url, "/do/login/")
     or string.match(url, "^https?://www%.facebook%.com/") then
     return false
   end
@@ -205,7 +221,7 @@ allowed = function(url, parenturl)
     return false
   end
 
-  if item_type ~= "profile" and not string.match(url, "/page/[0-9]") then
+  if item_type ~= "profile" and (item_type == "site_id" or not string.match(url, "/page/[0-9]")) then
     local a, b, name, c = string.match(url, "^https?://([^/]+.*)/m/([0-9]+)/view([a-z]+)/([0-9]+)")
     if not a then
       a, name, c, b = string.match(url, "^https?://([^/]+.*)/view([a-z]+)/([0-9]+)/m/([0-9]+)")
@@ -292,8 +308,20 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     return newurl
   end
 
+  local function fix_case(newurl)
+    if not string.match(newurl, "^https?://.") then
+      return newurl
+    end
+    if string.match(newurl, "^https?://[^/]+$") then
+      newurl = newurl .. "/"
+    end
+    local a, b = string.match(newurl, "^(https?://[^/]+/)(.*)$")
+    return string.lower(a) .. b
+  end
+
   local function check(newurl)
     newurl = decode_codepoint(newurl)
+    newurl = fix_case(newurl)
     if string.match(newurl, "%s") then
       for s in string.gmatch(newurl, "([^%s]+)") do
         check(s)
@@ -378,7 +406,10 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
         ["params"]=data
       }
       --print(last_id, action)
-      local newurl = urlparse.absolute(url, "/api/v1/api.php")
+      local newurl = fix_case(urlparse.absolute(url, "/api/v1/api.php"))
+      if not newurl then
+        error()
+      end
       ids[newurl] = true
       table.insert(urls, {
         url=newurl,
@@ -564,7 +595,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
     return wget.actions.ABORT
   end
 
-  if not is_static(url["url"]) and status_code ~= 302 then
+  if not is_static(url["url"]) then
     os.execute("sleep " .. tostring(concurrency*1.5))
   end
 
