@@ -565,7 +565,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   end
 
   if not is_static(url["url"]) then
-    os.execute("sleep " .. tostring(concurrency*2))
+    os.execute("sleep " .. tostring(concurrency*1.5))
   end
 
   find_item(url["url"])
