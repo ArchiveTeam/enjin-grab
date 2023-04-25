@@ -60,11 +60,11 @@ if not WGET_AT:
 #
 # Update this each time you make a non-cosmetic change.
 # It will be added to the WARC files and reported to the tracker.
-VERSION = '20230425.09'
+VERSION = '20230425.10'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
 TRACKER_ID = 'enjin'
 TRACKER_HOST = 'legacy-api.arpa.li'
-MULTI_ITEM_SIZE = 1
+MULTI_ITEM_SIZE = 15
 
 
 ###########################################################################
@@ -274,10 +274,15 @@ class WgetArgs(object):
             '--warc-zstd-dict', ItemInterpolation('%(item_dir)s/zstdict'),
         ])
 
-        item['item_name'] = '\0'.join([
-            s for s in item['item_name'].split('\0')
-            if s.split(':')[0] != 'profile'
-        ])
+        new_items = []
+        for s in sorted(item['item_name'].split('\0'), key=lambda x: -1 if 'site_id' in x else 0):
+            if s.startswith('profile:'):
+                continue
+            new_items.append(s)
+            if s.startswith('site_id:'):
+                break
+        item['item_name'] = '\0'.join(new_items)
+        print(item['item_name'])
 
         if '--concurrent' in sys.argv:
             concurrency = int(sys.argv[sys.argv.index('--concurrent')+1])
