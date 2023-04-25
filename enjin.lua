@@ -567,8 +567,9 @@ wget.callbacks.write_to_warc = function(url, http_stat)
     error("No item name found.")
   end
   if status_code ~= 200
+    and status_code ~= 302
     and string.match(url["url"], "^https?://www%.enjin%.com/page/([0-9]+)$") then
-    io.stdout:write("Does not exist.\n")
+    io.stdout:write("Bad site_id page response.\n")
     io.stdout:flush()
     abort_item()
   end
@@ -606,6 +607,13 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
+    if status_code == 302
+      and string.match(url["url"], "^https?://www%.enjin%.com/page/([0-9]+)$")
+      and newloc == "https://www.enjin.com/" then
+      io.stdout:write("Site does not exist. Skipping.\n")
+      io.stdout:flush()
+      return wget.actions.EXIT
+    end
     if processed(newloc) or not allowed(newloc, url["url"]) then
       tries = 0
       return wget.actions.EXIT
