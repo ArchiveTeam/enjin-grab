@@ -224,8 +224,8 @@ allowed = function(url, parenturl)
     end
     if item_domain then
       local s = string.match(url .. "/", "^https?://([^%./]+)%.enjin%.com/")
-      if (s and s == item_domain_enjin_name)
-        or (not s and string.match(url .. "/", "^https?://[^/]-([^%./]+%.[a-z]+)/") == string.match(item_domain, "([^%.]+%.[a-z]+)$")) then
+      if (s and string.lower(s) == string.lower(item_domain_enjin_name))
+        or (not s and string.match(string.lower(url) .. "/", "^https?://[^/]-([^%./]+%.[a-z]+)/") == string.match(string.lower(item_domain), "([^%.]+%.[a-z]+)$")) then
         return true
       end
     end
@@ -244,7 +244,7 @@ allowed = function(url, parenturl)
       not string.match(url, "^https?://[^/]*enjin%.com/")
       and (
         not item_domain
-        or string.match(url .. "/", "^https?://[^/]-([^%./]+%.[a-z]+)/") ~= string.match(item_domain, "([^%.]+%.[a-z]+)$")
+        or string.match(string.lower(url) .. "/", "^https?://[^/]-([^%./]+%.[a-z]+)/") ~= string.match(string.lower(item_domain), "([^%.]+%.[a-z]+)$")
       )
     ) then
     if string.match(url, "^https?://[^%./]+%.[^/]+") then
@@ -487,8 +487,8 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     if item_type == "site_id" and item_domain == nil then
       local site = string.match(html, 'class=\'site%-url\'%s*href="([^"]+)">')
       if site then
-        item_domain = string.match(site, "^https?://([^/]+)")
-        item_domain_enjin_name = string.match(site, "^https?://([^%./]+)%.enjin%.com")
+        item_domain = string.lower(string.match(site, "^https?://([^/]+)"))
+        item_domain_enjin_name = string.lower(string.match(site, "^https?://([^%./]+)%.enjin%.com"))
       end
       check(site)
       if not string.match(site, "/$") then
