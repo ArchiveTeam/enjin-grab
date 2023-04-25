@@ -123,13 +123,19 @@ find_item = function(url)
     value = string.match(url, "^https?://www%.enjin%.com/profile/([0-9]+)$")
     type_ = "profile"
   end
-  if not value then
+  if not value and not string.match(url, "/page/[0-9]") then
     value, preset, thread = string.match(url, "^https?://([^/]+.*)/m/([0-9]+)/viewthread/([0-9]+)")
     type_ = "thread"
+    if thread == item_thread then
+      value = nil
+    end
   end
-  if not value then
+  if not value and not string.match(url, "/page/[0-9]") then
     value, preset, thread = string.match(url, "^https?://([^/]+.*)/m/([0-9]+)/viewforum/([0-9]+)")
     type_ = "forum"
+    if thread == item_thread then
+      value = nil
+    end
   end
   if value then
     item_type = type_
@@ -197,7 +203,7 @@ allowed = function(url, parenturl)
     return false
   end
 
-  if item_type ~= "profile" then
+  if item_type ~= "profile" and not string.match(url, "/page/[0-9]") then
     local a, b, name, c = string.match(url, "^https?://([^/]+.*)/m/([0-9]+)/view([a-z]+)/([0-9]+)")
     if not a then
       a, name, c, b = string.match(url, "^https?://([^/]+.*)/view([a-z]+)/([0-9]+)/m/([0-9]+)")
@@ -425,6 +431,9 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     end
     if string.match(url, "/api/v1/api%.php") then
       local json = JSON:decode(html)
+      if json["transport"] == "POST" then
+        return urls
+      end
       local request_json = post_requests[tonumber(json["id"])]
       local request_method = request_json["method"]
       local base_url = request_json["extra"]["base_url"]
@@ -459,7 +468,12 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
           }, base_url)
         end
       elseif request_method == "Wiki.getPageTitle" then
-        html = html .. "\n\n" .. json["result"]["text_display"] .. "\n\n" .. json["result"]["text_text"]
+        if json["result"]["text_display"] then
+          html = html .. "\n\n" .. json["result"]["text_display"]
+        end
+        if json["result"]["text_text"] then
+          html = html .. "\n\n" .. json["result"]["text_text"]
+        end
       end
     end
     html = string.gsub(html, "\\", "")
