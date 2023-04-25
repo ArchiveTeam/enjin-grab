@@ -211,7 +211,7 @@ allowed = function(url, parenturl)
       a, name, c, b = string.match(url, "^https?://([^/]+.*)/view([a-z]+)/([0-9]+)/m/([0-9]+)")
     end
     if (name == "forum" or name == "thread") and a and b and c and c ~= item_thread then
-      discover_item(discovered_items, name .. ":" .. a .. ":" .. b .. ":" .. c)
+      discover_item(discovered_items, name .. ":" .. string.lower(a) .. ":" .. b .. ":" .. c)
       return false
     end
   end
