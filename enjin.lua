@@ -240,7 +240,7 @@ allowed = function(url, parenturl)
     end
     if item_domain then
       local s = string.match(url .. "/", "^https?://([^%./]+)%.enjin%.com/")
-      if (s and string.lower(s) == string.lower(item_domain_enjin_name))
+      if (s and item_domain_enjin_name and string.lower(s) == string.lower(item_domain_enjin_name))
         or (not s and string.match(string.lower(url) .. "/", "^https?://[^/]-([^%./]+%.[a-z]+)/") == string.match(string.lower(item_domain), "([^%.]+%.[a-z]+)$")) then
         return true
       end
@@ -524,7 +524,10 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       local site = string.match(html, 'class=\'site%-url\'%s*href="([^"]+)">')
       if site then
         item_domain = string.lower(string.match(site, "^https?://([^/]+)"))
-        item_domain_enjin_name = string.lower(string.match(site, "^https?://([^%./]+)%.enjin%.com"))
+        local temp = string.match(site, "^https?://([^%./]+)%.enjin%.com")
+        if temp then
+          item_domain_enjin_name = string.lower(temp)
+        end
       end
       check(site)
       if not string.match(site, "/$") then
