@@ -412,7 +412,8 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     and status_code < 300
     and not is_static(url) then
     html = read_file(file)
-    if string.match(html, "var album_url") then
+    if string.match(html, "var album_url")
+      and not string.match(html, "total_albums:%s*0") then
       kill_grab()
       return urls
     end
