@@ -29,6 +29,7 @@ local downloaded = {}
 local addedtolist = {}
 local abortgrab = false
 local killgrab = false
+local mark_unfinished = false
 
 local discovered_outlinks = {}
 local discovered_items = {}
@@ -445,8 +446,8 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     html = read_file(file)
     if string.match(html, "var album_url")
       and not string.match(html, "total_albums:%s*0") then
-      kill_grab()
-      return urls
+      bad_items[item_name] = true
+--      return urls
     end
     local wiki_id, preset_id, base_url = string.match(html, "m_wiki%[([0-9]+)%]%s*=%s*new%s+Enjin_Wiki%({%s*preset_id%s*:%s*([0-9]+),%s*base_url%s*:%s+'([^']+)',")
     if wiki_id and preset_id and base_url then
